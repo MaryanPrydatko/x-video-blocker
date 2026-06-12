@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="icons/icon128.png" width="96" alt="X Video Blocker logo">
+  <img src="icons/icon128.png" width="96" alt="Video Bouncer logo">
 </p>
 
-<h1 align="center">X Video Blocker</h1>
+<h1 align="center">Video Bouncer for X</h1>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
@@ -53,7 +53,7 @@ Revealed posts stay revealed until you reload the page. Hiding uses `display: no
 1. Open `brave://extensions`
 2. Enable **Developer mode** (top right)
 3. Click **Load unpacked** (or just drag this folder onto the page)
-4. Select the `x-video-blocker` folder
+4. Select this folder
 5. Open or reload `x.com`
 
 Same steps work in Chrome at `chrome://extensions`.
