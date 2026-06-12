@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "X Video Blocker",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Hides X/Twitter posts that contain videos behind a click-to-reveal placeholder with a confirmation step.",
   "icons": {
     "16": "icons/icon16.png",

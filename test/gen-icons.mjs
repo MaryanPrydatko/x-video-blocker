@@ -1,5 +1,7 @@
-// Renders the extension icon (blue rounded square + video-off glyph) to PNG
-// at all manifest sizes using headless Chromium. Run: node test/gen-icons.mjs
+// Renders the extension icon to PNG at all manifest sizes: a white video
+// card with a play button and a red "blocked" slash on a blue gradient.
+// Designed at 128px and scaled, so every size stays proportional.
+// Run: node test/gen-icons.mjs
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,20 +14,43 @@ mkdirSync(iconsDir, { recursive: true });
 const html = `<!doctype html><meta charset="utf-8">
 <style>
   body { margin: 0; background: transparent; }
+  #wrap { width: 128px; height: 128px; }
   #icon {
-    width: 128px; height: 128px; border-radius: 24%;
-    background: linear-gradient(135deg, #1d9bf0, #0b6bb8);
-    display: flex; align-items: center; justify-content: center;
+    width: 128px; height: 128px; border-radius: 30px;
+    background: linear-gradient(160deg, #6ec0ff 0%, #1d9bf0 45%, #0b6bb8 100%);
+    position: relative; overflow: hidden;
+    transform-origin: top left;
   }
-  svg { width: 60%; height: 60%; }
+  #icon::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(120% 80% at 20% 0%, rgba(255,255,255,0.25), transparent 55%);
+  }
+  .card {
+    position: absolute; left: 20px; top: 36px; width: 88px; height: 58px;
+    background: #fff; border-radius: 15px;
+    box-shadow: 0 6px 14px rgba(5, 50, 90, 0.35);
+  }
+  .play {
+    position: absolute; left: 54%; top: 50%;
+    width: 26px; height: 30px;
+    transform: translate(-50%, -50%);
+    background: #1d9bf0;
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+  .slash {
+    position: absolute; left: -14px; top: 56px;
+    width: 156px; height: 17px;
+    background: #f4212e; border-radius: 999px;
+    transform: rotate(-38deg);
+    transform-origin: center;
+    box-shadow: 0 3px 8px rgba(110, 0, 12, 0.4);
+  }
 </style>
-<div id="icon">
-  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"
-       stroke-linecap="round" stroke-linejoin="round">
-    <path d="M10.66 5H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"/>
-    <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3.66"/>
-    <line x1="1" y1="1" x2="23" y2="23"/>
-  </svg>
+<div id="wrap">
+  <div id="icon">
+    <div class="card"><div class="play"></div></div>
+    <div class="slash"></div>
+  </div>
 </div>`;
 
 const browser = await chromium.launch();
@@ -34,11 +59,11 @@ await page.setContent(html);
 
 for (const size of [16, 32, 48, 128]) {
   await page.evaluate((s) => {
-    const el = document.getElementById('icon');
-    el.style.width = `${s}px`;
-    el.style.height = `${s}px`;
+    document.getElementById('wrap').style.width = `${s}px`;
+    document.getElementById('wrap').style.height = `${s}px`;
+    document.getElementById('icon').style.transform = `scale(${s / 128})`;
   }, size);
-  await page.locator('#icon').screenshot({
+  await page.locator('#wrap').screenshot({
     path: path.join(iconsDir, `icon${size}.png`),
     omitBackground: true,
   });
