@@ -7,7 +7,18 @@
 
   // Mirrors chrome.storage.sync; defaults apply before the first sync
   // resolves and in storage-less contexts (the fixture test).
-  const settings = { enabled: true, blockGifs: true, confirmReveal: true };
+  // mode "all": hide every video post except whitelisted accounts.
+  // mode "list": hide video posts only from blocklisted accounts.
+  const settings = {
+    enabled: true,
+    blockGifs: true,
+    confirmReveal: true,
+    mode: 'all',
+    whitelist: [],
+    blocklist: [],
+  };
+
+  const normalizeHandle = (h) => (h || '').replace(/^@/, '').trim().toLowerCase();
 
   // Tweet ids the user confirmed they want to see. Session-only on purpose —
   // after a reload everything is hidden again.
@@ -151,6 +162,31 @@
       root.appendChild(details);
     }
 
+    if (info.handle) {
+      const listBtn = document.createElement('button');
+      listBtn.type = 'button';
+      listBtn.className = 'tvb-allow';
+      listBtn.textContent =
+        settings.mode === 'list'
+          ? `Stop blocking ${info.handle}`
+          : `Always show posts from ${info.handle}`;
+      listBtn.addEventListener('click', () => {
+        const h = normalizeHandle(info.handle);
+        if (!h) return;
+        const listKey = settings.mode === 'list' ? 'blocklist' : 'whitelist';
+        const next =
+          settings.mode === 'list'
+            ? settings.blocklist.filter((v) => v !== h)
+            : settings.whitelist.includes(h)
+              ? settings.whitelist
+              : [...settings.whitelist, h];
+        settings[listKey] = next;
+        globalThis.chrome?.storage?.sync?.set({ [listKey]: next });
+        scan();
+      });
+      root.appendChild(listBtn);
+    }
+
     const confirm = document.createElement('div');
     confirm.className = 'tvb-confirm';
     confirm.hidden = true;
@@ -197,7 +233,17 @@
     const hasGif = !!article.querySelector(GIF);
     const hasAnyVideo = hasPlayer || hasGif || !!article.querySelector('video');
     const gifOnly = hasGif && !hasPlayer;
-    const shouldHide = settings.enabled && hasAnyVideo && !(gifOnly && !settings.blockGifs);
+    let shouldHide = settings.enabled && hasAnyVideo && !(gifOnly && !settings.blockGifs);
+
+    let info = null;
+    if (shouldHide) {
+      info = getInfo(article);
+      const h = normalizeHandle(info.handle);
+      shouldHide =
+        settings.mode === 'list'
+          ? !!h && settings.blocklist.includes(h)
+          : !h || !settings.whitelist.includes(h);
+    }
 
     if (!shouldHide) {
       // Blocking disabled, GIFs exempted, or a node recycled by the
@@ -207,7 +253,6 @@
     }
 
     const id = getTweetId(article);
-    const info = getInfo(article);
     // Identity for id-less tweets falls back to a content fingerprint so two
     // different id-less tweets sharing a recycled node never match each other.
     const key = id || `fp:${info.handle}|${[...info.text].slice(0, 80).join('')}`;

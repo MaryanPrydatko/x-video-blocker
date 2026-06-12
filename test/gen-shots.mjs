@@ -38,12 +38,17 @@ await shot('are-you-sure.png');
 const popup = await browser.newPage({ viewport: { width: 320, height: 400 }, deviceScaleFactor: 2 });
 await popup.addInitScript(() => {
   window.chrome = {
-    storage: { sync: { get: async (d) => d, set: async () => {} } },
+    storage: {
+      sync: {
+        get: async (d) => ({ ...d, whitelist: ['wildclips', 'natgeo'] }),
+        set: async () => {},
+      },
+    },
     tabs: {
       query: async () => [{ id: 1, url: 'https://x.com/home' }],
       sendMessage: async () => ({ hidden: 3, revealed: 1 }),
     },
-    runtime: { getManifest: () => ({ version: '1.1.0' }) },
+    runtime: { getManifest: () => ({ version: '1.2.0' }) },
   };
 });
 await popup.goto(`file://${path.join(root, 'popup.html')}`);

@@ -22,6 +22,7 @@ Each hidden post becomes a calm placeholder:
 - **"1 post hidden — contains a video"** + author name and @handle
 - **"What's it about?"** dropdown → shows the post text so you can decide without watching
 - **"Show video"** → asks **"Are you sure?"** before revealing
+- **"Always show posts from @handle"** → one click whitelists the account forever
 
 <p align="center">
   <img src="screenshots/timeline-hidden.png" width="600" alt="Timeline with two hidden posts">
@@ -42,6 +43,8 @@ Click the toolbar icon to toggle behavior and see per-page stats:
 - **Block videos** — master switch
 - **Also block GIFs** — exempt GIFs if you only mind real videos
 - **Ask before showing** — skip the confirmation step if you trust yourself
+- **Mode** — *Block all videos* (with an always-allow whitelist) or *Block only listed accounts* (everything else plays as usual)
+- **Account lists** — add/remove @handles as chips; synced across your browsers via `chrome.storage.sync`
 
 Revealed posts stay revealed until you reload the page. Hiding uses `display: none`, which also stops autoplay — X only plays videos that are visible.
 

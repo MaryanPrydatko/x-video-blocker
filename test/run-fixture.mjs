@@ -110,6 +110,28 @@ check(
   'placeholder rebuilt after removal'
 );
 
+// Whitelist via the "Always show posts from @…" shortcut
+const ph2 = page.locator('#video-post-2 .tvb-placeholder');
+check((await ph2.count()) === 1, 'second wildclips post hidden initially');
+check(
+  (await ph2.locator('.tvb-allow').innerText()) === 'Always show posts from @wildclips',
+  'always-allow shortcut labelled with handle'
+);
+await ph2.locator('.tvb-allow').click();
+await page.waitForTimeout(300);
+check(
+  (await page.locator('#video-post-2[data-tvb-state]').count()) === 0,
+  'whitelisted account post unhidden'
+);
+check(
+  (await page.locator('#video-post[data-tvb-state]').count()) === 0,
+  'other post from whitelisted account unhidden too'
+);
+check(
+  (await page.locator('#late-post[data-tvb-state="hidden"]').count()) === 1,
+  'other accounts still hidden after whitelisting'
+);
+
 check(errors.length === 0, `no page errors${errors.length ? ` (${errors[0]})` : ''}`);
 
 await browser.close();

@@ -37,6 +37,33 @@
     <input type="checkbox" id="confirmReveal" class="switch">
   </label>
 
+  <section class="modes">
+    <h2>Mode</h2>
+    <label class="row">
+      <div>
+        <strong>Block all videos</strong>
+        <span>Except accounts you allow below</span>
+      </div>
+      <input type="radio" name="mode" value="all" class="radio">
+    </label>
+    <label class="row">
+      <div>
+        <strong>Block only listed accounts</strong>
+        <span>Everything else plays as usual</span>
+      </div>
+      <input type="radio" name="mode" value="list" class="radio">
+    </label>
+  </section>
+
+  <section class="list">
+    <h2 id="listTitle">Always allow</h2>
+    <div class="chips" id="chips"></div>
+    <form id="addForm">
+      <input id="addInput" type="text" placeholder="@handle" autocomplete="off" spellcheck="false">
+      <button type="submit">Add</button>
+    </form>
+  </section>
+
   <footer>
     <a href="https://github.com/MaryanPrydatko/x-video-blocker" target="_blank" rel="noreferrer">GitHub</a>
     <span id="version"></span>
