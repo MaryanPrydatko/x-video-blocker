@@ -4,17 +4,40 @@ article[data-tvb-state="hidden"] > *:not(.tvb-placeholder) {
   display: none !important;
 }
 
-/* Neutral grays so it reads fine on light, dim and dark themes. */
 .tvb-placeholder {
   margin: 10px 16px 14px;
-  padding: 14px;
+  padding: 14px 16px;
   border: 1px solid rgba(113, 118, 123, 0.28);
   border-radius: 16px;
-  background: rgba(113, 118, 123, 0.07);
   color: rgb(113, 118, 123);
   font-size: 14px;
   line-height: 1.45;
-  font-family: inherit;
+  /* X never sets a font on <article>, so "inherit" falls back to the page
+     default (serif). Use X's own stack explicitly. */
+  font-family: "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+}
+
+.tvb-placeholder.tvb-dark {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tvb-placeholder.tvb-light {
+  background: rgba(15, 20, 25, 0.03);
+}
+
+.tvb-dark .tvb-title,
+.tvb-dark .tvb-name,
+.tvb-dark .tvb-text,
+.tvb-dark .tvb-question {
+  color: #e7e9ea;
+}
+
+.tvb-light .tvb-title,
+.tvb-light .tvb-name,
+.tvb-light .tvb-text,
+.tvb-light .tvb-question {
+  color: #0f1419;
 }
 
 .tvb-row {
@@ -43,15 +66,23 @@ article[data-tvb-state="hidden"] > *:not(.tvb-placeholder) {
 .tvb-title {
   font-weight: 700;
   font-size: 15px;
+  letter-spacing: -0.1px;
 }
 
 .tvb-author {
   font-size: 13px;
-  opacity: 0.85;
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tvb-name {
+  font-weight: 600;
+}
+
+.tvb-handle {
+  color: rgb(113, 118, 123);
 }
 
 .tvb-show,
@@ -59,9 +90,9 @@ article[data-tvb-state="hidden"] > *:not(.tvb-placeholder) {
 .tvb-no {
   border-radius: 9999px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   font-family: inherit;
-  padding: 7px 16px;
+  padding: 8px 16px;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.1s ease;
 }
@@ -69,7 +100,7 @@ article[data-tvb-state="hidden"] > *:not(.tvb-placeholder) {
 .tvb-show:active,
 .tvb-yes:active,
 .tvb-no:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .tvb-show:focus-visible,
@@ -108,11 +139,32 @@ article[data-tvb-state="hidden"] > *:not(.tvb-placeholder) {
 }
 
 .tvb-details summary {
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
   color: #1d9bf0;
   font-size: 13px;
   font-weight: 600;
   user-select: none;
+  list-style: none;
+}
+
+.tvb-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.tvb-details summary::after {
+  content: "";
+  display: inline-block;
+  margin-left: 6px;
+  border: 4px solid transparent;
+  border-top-color: currentColor;
+  transform: translateY(2px);
+  transition: transform 0.15s ease;
+}
+
+.tvb-details[open] summary::after {
+  transform: translateY(-2px) rotate(180deg);
 }
 
 .tvb-details summary:hover {
@@ -127,6 +179,7 @@ article[data-tvb-state="hidden"] > *:not(.tvb-placeholder) {
   border-radius: 0 10px 10px 0;
   white-space: pre-wrap;
   word-break: break-word;
+  font-size: 14px;
 }
 
 .tvb-confirm {

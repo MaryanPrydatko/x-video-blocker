@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icons/icon48.png" alt="" width="36" height="36">
+    <div>
+      <h1>X Video Blocker</h1>
+      <p id="stats">&nbsp;</p>
+    </div>
+  </header>
+
+  <label class="row">
+    <div>
+      <strong>Block videos</strong>
+      <span>Hide posts that contain videos</span>
+    </div>
+    <input type="checkbox" id="enabled" class="switch">
+  </label>
+
+  <label class="row">
+    <div>
+      <strong>Also block GIFs</strong>
+      <span>Treat GIF posts the same way</span>
+    </div>
+    <input type="checkbox" id="blockGifs" class="switch">
+  </label>
+
+  <label class="row">
+    <div>
+      <strong>Ask before showing</strong>
+      <span>"Are you sure?" confirmation step</span>
+    </div>
+    <input type="checkbox" id="confirmReveal" class="switch">
+  </label>
+
+  <footer>
+    <a href="https://github.com/MaryanPrydatko/x-video-blocker" target="_blank" rel="noreferrer">GitHub</a>
+    <span id="version"></span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

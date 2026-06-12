@@ -2,11 +2,18 @@
 // placeholder with an "are you sure?" confirmation step.
 (() => {
   const TWEET = 'article[data-testid="tweet"]';
-  const VIDEO = 'video, [data-testid="videoPlayer"], [data-testid="videoComponent"]';
+  const PLAYER = '[data-testid="videoPlayer"], [data-testid="videoComponent"]';
+  const GIF = '[data-testid="tweetGif"]';
+
+  // Mirrors chrome.storage.sync; defaults apply before the first sync
+  // resolves and in storage-less contexts (the fixture test).
+  const settings = { enabled: true, blockGifs: true, confirmReveal: true };
 
   // Tweet ids the user confirmed they want to see. Session-only on purpose —
   // after a reload everything is hidden again.
   const revealedIds = new Set();
+  const hiddenEver = new Set(); // unique keys hidden on this page, for stats
+  let revealedCount = 0;
 
   const getTweetId = (article) => {
     const links = article.querySelectorAll('a[href*="/status/"]');
@@ -44,8 +51,14 @@
     let text = (article.querySelector('[data-testid="tweetText"]')?.textContent || '').trim();
     const chars = [...text];
     if (chars.length > 500) text = `${chars.slice(0, 500).join('')}…`;
-    const isGif = !!article.querySelector('[data-testid="tweetGif"]');
-    return { name, handle, text, isGif };
+    return { name, handle, text };
+  };
+
+  const isDarkTheme = () => {
+    const m = (getComputedStyle(document.body).backgroundColor || '').match(/\d+/g);
+    if (!m) return true;
+    const [r, g, b] = m.map(Number);
+    return 0.299 * r + 0.587 * g + 0.114 * b < 128;
   };
 
   const pauseVideos = (article) => {
@@ -64,13 +77,18 @@
     article.dataset.tvbRevealedId = key;
     article.setAttribute('data-tvb-state', 'revealed');
     article.querySelectorAll('.tvb-placeholder').forEach((el) => el.remove());
+    revealedCount++;
   };
 
-  const buildPlaceholder = (article, id, key, info) => {
-    const kind = info.isGif ? 'GIF' : 'video';
+  const unhide = (article) => {
+    article.removeAttribute('data-tvb-state');
+    delete article.dataset.tvbRevealedId;
+    article.querySelectorAll('.tvb-placeholder').forEach((el) => el.remove());
+  };
 
+  const buildPlaceholder = (article, id, key, info, kind) => {
     const root = document.createElement('div');
-    root.className = 'tvb-placeholder';
+    root.className = `tvb-placeholder ${isDarkTheme() ? 'tvb-dark' : 'tvb-light'}`;
     root.dataset.tvbKey = key;
 
     const row = document.createElement('div');
@@ -94,11 +112,22 @@
     texts.appendChild(title);
 
     // User content goes in via textContent only — never innerHTML.
-    const author = [info.name, info.handle].filter(Boolean).join(' ');
-    if (author) {
+    if (info.name || info.handle) {
       const authorEl = document.createElement('div');
       authorEl.className = 'tvb-author';
-      authorEl.textContent = author;
+      if (info.name) {
+        const nameEl = document.createElement('span');
+        nameEl.className = 'tvb-name';
+        nameEl.textContent = info.name;
+        authorEl.appendChild(nameEl);
+      }
+      if (info.name && info.handle) authorEl.appendChild(document.createTextNode(' '));
+      if (info.handle) {
+        const handleEl = document.createElement('span');
+        handleEl.className = 'tvb-handle';
+        handleEl.textContent = info.handle;
+        authorEl.appendChild(handleEl);
+      }
       texts.appendChild(authorEl);
     }
 
@@ -144,6 +173,10 @@
     root.addEventListener('click', (e) => e.stopPropagation());
 
     showBtn.addEventListener('click', () => {
+      if (!settings.confirmReveal) {
+        reveal(article, id, key);
+        return;
+      }
       showBtn.hidden = true;
       confirm.hidden = false;
     });
@@ -160,11 +193,16 @@
     const state = article.getAttribute('data-tvb-state');
     const placeholder = article.querySelector('.tvb-placeholder');
 
-    if (!article.querySelector(VIDEO)) {
-      // DOM node recycled by the virtualized timeline for a video-less tweet.
-      if (state) article.removeAttribute('data-tvb-state');
-      delete article.dataset.tvbRevealedId;
-      if (placeholder) placeholder.remove();
+    const hasPlayer = !!article.querySelector(PLAYER);
+    const hasGif = !!article.querySelector(GIF);
+    const hasAnyVideo = hasPlayer || hasGif || !!article.querySelector('video');
+    const gifOnly = hasGif && !hasPlayer;
+    const shouldHide = settings.enabled && hasAnyVideo && !(gifOnly && !settings.blockGifs);
+
+    if (!shouldHide) {
+      // Blocking disabled, GIFs exempted, or a node recycled by the
+      // virtualized timeline for a video-less tweet.
+      if (state || placeholder) unhide(article);
       return;
     }
 
@@ -191,8 +229,9 @@
     if (placeholder) placeholder.remove();
     delete article.dataset.tvbRevealedId;
     article.setAttribute('data-tvb-state', 'hidden');
-    article.appendChild(buildPlaceholder(article, id, key, info));
+    article.appendChild(buildPlaceholder(article, id, key, info, gifOnly ? 'GIF' : 'video'));
     pauseVideos(article);
+    hiddenEver.add(key);
   };
 
   const scan = () => document.querySelectorAll(TWEET).forEach(processTweet);
@@ -207,6 +246,40 @@
     });
   });
 
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-  scan();
+  const start = () => {
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    scan();
+  };
+
+  // Popup asks for per-page stats over runtime messaging.
+  globalThis.chrome?.runtime?.onMessage?.addListener((msg, _sender, sendResponse) => {
+    if (msg?.type !== 'tvb-stats') return;
+    sendResponse({
+      hidden: document.querySelectorAll('article[data-tvb-state="hidden"]').length,
+      revealed: revealedCount,
+      totalSeen: hiddenEver.size,
+    });
+  });
+
+  const storage = globalThis.chrome?.storage?.sync;
+  if (storage) {
+    globalThis.chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== 'sync') return;
+      let touched = false;
+      for (const [k, v] of Object.entries(changes)) {
+        if (k in settings) {
+          settings[k] = v.newValue;
+          touched = true;
+        }
+      }
+      if (touched) scan();
+    });
+    storage
+      .get(settings)
+      .then((stored) => Object.assign(settings, stored))
+      .catch(() => {})
+      .finally(start);
+  } else {
+    start();
+  }
 })();
