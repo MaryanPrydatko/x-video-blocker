@@ -1,0 +1,5 @@
+node_modules/
+test/.tmp-ext/
+test/.profile/
+test/.profile-brave/
+.DS_Store

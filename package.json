@@ -1,0 +1,12 @@
+{
+  "name": "x-video-blocker",
+  "private": true,
+  "scripts": {
+    "icons": "node test/gen-icons.mjs",
+    "test": "node test/run-fixture.mjs",
+    "test:live": "node test/run-x.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
+}

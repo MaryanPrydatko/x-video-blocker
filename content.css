@@ -1,0 +1,146 @@
+/* Hide everything inside a flagged post except our placeholder.
+   display:none also keeps X's IntersectionObserver from autoplaying the video. */
+article[data-tvb-state="hidden"] > *:not(.tvb-placeholder) {
+  display: none !important;
+}
+
+/* Neutral grays so it reads fine on light, dim and dark themes. */
+.tvb-placeholder {
+  margin: 10px 16px 14px;
+  padding: 14px;
+  border: 1px solid rgba(113, 118, 123, 0.28);
+  border-radius: 16px;
+  background: rgba(113, 118, 123, 0.07);
+  color: rgb(113, 118, 123);
+  font-size: 14px;
+  line-height: 1.45;
+  font-family: inherit;
+}
+
+.tvb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tvb-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9999px;
+  background: rgba(29, 155, 240, 0.12);
+  color: #1d9bf0;
+}
+
+.tvb-texts {
+  min-width: 0;
+  flex: 1;
+}
+
+.tvb-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.tvb-author {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tvb-show,
+.tvb-yes,
+.tvb-no {
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 13px;
+  font-family: inherit;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.tvb-show:active,
+.tvb-yes:active,
+.tvb-no:active {
+  transform: scale(0.97);
+}
+
+.tvb-show:focus-visible,
+.tvb-yes:focus-visible,
+.tvb-no:focus-visible,
+.tvb-details summary:focus-visible {
+  outline: 2px solid #1d9bf0;
+  outline-offset: 2px;
+}
+
+.tvb-show,
+.tvb-yes {
+  flex-shrink: 0;
+  border: none;
+  background: #1d9bf0;
+  color: #fff;
+}
+
+.tvb-show:hover,
+.tvb-yes:hover {
+  background: #1a8cd8;
+}
+
+.tvb-no {
+  border: 1px solid rgba(113, 118, 123, 0.6);
+  background: transparent;
+  color: inherit;
+}
+
+.tvb-no:hover {
+  background: rgba(113, 118, 123, 0.12);
+}
+
+.tvb-details {
+  margin-top: 10px;
+}
+
+.tvb-details summary {
+  cursor: pointer;
+  color: #1d9bf0;
+  font-size: 13px;
+  font-weight: 600;
+  user-select: none;
+}
+
+.tvb-details summary:hover {
+  text-decoration: underline;
+}
+
+.tvb-text {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-left: 3px solid rgba(29, 155, 240, 0.5);
+  background: rgba(113, 118, 123, 0.08);
+  border-radius: 0 10px 10px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tvb-confirm {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tvb-confirm[hidden] {
+  display: none !important;
+}
+
+.tvb-question {
+  font-weight: 600;
+}
